@@ -98,7 +98,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-blue-600 transition-colors font-medium"
                 >
-                  Termos de Serviço
+                  Terms of Service
                 </a>
               </li>
               <li className="text-center">
@@ -108,7 +108,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-blue-600 transition-colors font-medium whitespace-nowrap"
                 >
-                  Política de Privacidade
+                  Privacy Policy
                 </a>
               </li>
               <li className="text-center">
@@ -118,7 +118,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-blue-600 transition-colors font-medium"
                 >
-                  Política de Cookies
+                  Cookie Policy
                 </a>
               </li>
             </ul>
