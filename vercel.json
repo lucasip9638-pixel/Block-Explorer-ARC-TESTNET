@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "NEXT_PUBLIC_ARC_RPC_URL": "https://rpc.testnet.arc.network",
+    "NEXT_PUBLIC_ARC_CHAIN_ID": "5042002",
+    "NEXT_PUBLIC_ARC_EXPLORER_URL": "https://testnet.arcscan.app"
+  }
+}
+

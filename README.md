@@ -123,6 +123,38 @@ A configuração da rede está em `config/arc-testnet.ts`:
 - Circle Testnet Faucet
 - Easy Faucet Arc
 
+## 🚀 Deploy no Vercel
+
+### Conectar GitHub ao Vercel
+
+1. **Acesse o Vercel**: [https://vercel.com](https://vercel.com)
+2. **Faça login** com sua conta GitHub
+3. **Clique em "Add New Project"**
+4. **Importe o repositório**: `lucasip9638-pixel/Block-Explorer-ARC-TESTNET`
+5. **Configure o projeto**:
+   - Framework Preset: **Next.js**
+   - Root Directory: `./` (padrão)
+   - Build Command: `npm run build` (automático)
+   - Output Directory: `.next` (automático)
+   - Install Command: `npm install` (automático)
+6. **Variáveis de Ambiente** (opcional):
+   - `OPENAI_API_KEY` - Se desejar usar o chat com IA
+7. **Clique em "Deploy"**
+
+### Deploy Automático
+
+Após conectar, cada push para a branch `main` no GitHub irá:
+- ✅ Disparar um novo deploy automaticamente
+- ✅ Executar o build
+- ✅ Fazer deploy da nova versão
+- ✅ Atualizar o site em produção
+
+### URLs de Deploy
+
+Após o deploy, você terá:
+- **Production URL**: `https://seu-projeto.vercel.app`
+- **Preview URLs**: Para cada Pull Request
+
 ## 📝 Licença
 
 Este projeto é open source e está disponível sob a licença MIT.
@@ -132,6 +164,7 @@ Este projeto é open source e está disponível sob a licença MIT.
 - [ARC Testnet Explorer](https://testnet.arcscan.app)
 - [ARC Network Docs](https://docs.arc.network)
 - [Circle Gateway](https://www.circle.com/pt-br/gateway)
+- [Vercel Documentation](https://vercel.com/docs)
 
 ## 👨‍💻 Desenvolvedor
 
@@ -140,4 +173,5 @@ Desenvolvido para a comunidade ARC Testnet.
 ---
 
 **Status**: ✅ Em produção e funcionando
+**GitHub**: [https://github.com/lucasip9638-pixel/Block-Explorer-ARC-TESTNET](https://github.com/lucasip9638-pixel/Block-Explorer-ARC-TESTNET)
 
