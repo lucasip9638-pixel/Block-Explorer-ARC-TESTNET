@@ -52,13 +52,14 @@ async function fetchRecentTransactionsFromExplorer(): Promise<RecentTransaction[
     console.log('🔍 Buscando transações via Blockscout API (igual ao ARC Scan)...')
     
     // API do Blockscout para transações recentes (múltiplos endpoints)
+    // Priorizar endpoints que funcionam melhor com ARC Scan
     const apiEndpoints = [
-      `${explorerUrl}/api/v2/transactions?page=1&page_size=15&sort=desc`,
-      `${explorerUrl}/api/v2/transactions?filter=to%20OR%20from&page=1&page_size=15`,
-      `${explorerUrl}/api/v1/transactions?limit=15&sort=desc`,
-      `${explorerUrl}/api/v1/txs?limit=15&sort=desc`,
-      `${explorerUrl}/api?module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=true`,
+      `${explorerUrl}/api/v2/transactions?page=1&page_size=20&sort=desc`,
+      `${explorerUrl}/api/v2/transactions?filter=to%20OR%20from&page=1&page_size=20`,
+      `${explorerUrl}/api/v1/transactions?limit=20&sort=desc`,
+      `${explorerUrl}/api/v1/txs?limit=20&sort=desc`,
       `${explorerUrl}/api/v2/transactions`,
+      `${explorerUrl}/api/transactions?limit=20`,
     ]
     
     for (const endpoint of apiEndpoints) {
