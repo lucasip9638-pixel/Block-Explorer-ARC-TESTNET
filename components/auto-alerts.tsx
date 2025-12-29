@@ -10,9 +10,9 @@ import { formatAddress } from "@/lib/utils"
 export function AutoAlerts() {
   const { data: transactions, isLoading, error } = useRecentTransactions()
 
-  // Sempre mostrar as 10 transações mais recentes
+  // Filtrar apenas transferências e mostrar as 10 mais recentes
   const displayTransactions = useMemo(() => {
-    console.log('📊 AutoAlerts - Transações recebidas:', transactions?.length || 0, transactions)
+    console.log('📊 AutoAlerts - Transações recebidas:', transactions?.length || 0)
     if (!transactions || transactions.length === 0) {
       console.log('⚠️ AutoAlerts - Nenhuma transação disponível')
       if (error) {
@@ -20,8 +20,17 @@ export function AutoAlerts() {
       }
       return []
     }
-    console.log('✅ AutoAlerts - Exibindo', Math.min(transactions.length, 10), 'transações')
-    return transactions.slice(0, 10)
+    
+    // Filtrar apenas transferências (já vem filtrado do hook, mas garantir)
+    const transfers = transactions.filter(tx => 
+      tx.type === 'Transfer' && 
+      tx.to !== null && 
+      tx.value !== '0' &&
+      parseFloat(tx.value) > 0
+    )
+    
+    console.log('✅ AutoAlerts - Exibindo', Math.min(transfers.length, 10), 'transferências')
+    return transfers.slice(0, 10)
   }, [transactions, error])
 
   const formatTime = (timestamp: number) => {

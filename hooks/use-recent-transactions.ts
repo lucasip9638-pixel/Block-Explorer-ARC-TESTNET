@@ -175,20 +175,34 @@ async function fetchRecentTransactionsFromExplorer(): Promise<RecentTransaction[
                 else type = 'Contract Call'
               }
               
+              // Buscar minerador do bloco
+              const blockNumber = BigInt(tx.block_number || tx.blockNumber || tx.block || '0')
+              const miner = tx.block?.miner || tx.miner || ''
+              
               return {
                 hash,
                 from,
                 to,
                 value,
                 timestamp: typeof timestamp === 'number' ? timestamp : Number(timestamp),
-                blockNumber: BigInt(tx.block_number || tx.blockNumber || tx.block || '0'),
+                blockNumber,
                 status,
                 type,
+                miner,
                 formattedTime: formatDistanceToNow(new Date(Number(timestamp) * 1000), { addSuffix: true }),
               }
             })
+            // FILTRAR: Mostrar apenas transferências
+            const transferTxs = formattedTxs.filter(tx => {
+              // Apenas transferências simples (não contratos, não approvals, não swaps)
+              return tx.type === 'Transfer' && 
+                     tx.to !== null && 
+                     tx.value !== '0' &&
+                     !tx.from.startsWith('0x0000000000000000000000000000000000000000')
+            })
             
-            return formattedTxs
+            console.log(`📊 ${transferTxs.length} transferências filtradas de ${formattedTxs.length} transações totais`)
+            return transferTxs
           }
         } else {
           console.warn(`   Resposta não OK: ${response.status} ${response.statusText}`)
