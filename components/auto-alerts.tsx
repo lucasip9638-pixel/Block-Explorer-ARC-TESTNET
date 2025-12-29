@@ -8,15 +8,21 @@ import { ARC_TESTNET_CONFIG } from "@/config/arc-testnet"
 import { formatAddress } from "@/lib/utils"
 
 export function AutoAlerts() {
-  const { data: transactions, isLoading } = useRecentTransactions()
+  const { data: transactions, isLoading, error } = useRecentTransactions()
 
   // Sempre mostrar as 10 transações mais recentes
   const displayTransactions = useMemo(() => {
+    console.log('📊 AutoAlerts - Transações recebidas:', transactions?.length || 0, transactions)
     if (!transactions || transactions.length === 0) {
+      console.log('⚠️ AutoAlerts - Nenhuma transação disponível')
+      if (error) {
+        console.error('❌ AutoAlerts - Erro:', error)
+      }
       return []
     }
+    console.log('✅ AutoAlerts - Exibindo', Math.min(transactions.length, 10), 'transações')
     return transactions.slice(0, 10)
-  }, [transactions])
+  }, [transactions, error])
 
   const formatTime = (timestamp: number) => {
     try {

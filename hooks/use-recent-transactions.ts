@@ -221,15 +221,13 @@ async function fetchRecentTransactionsViaRPC(): Promise<RecentTransaction[]> {
     console.log('✅ Bloco mais recente:', latestBlock.toString())
     
     // ESCANEAR BLOCOS para garantir que encontre transações REAIS
-    // Aumentar número de blocos para garantir que encontre transações reais
-    const blocksToScan = 500 // Escanear mais blocos para encontrar transações REAIS
+    const blocksToScan = 1000 // Escanear mais blocos para garantir transações REAIS
     const transactions: RecentTransaction[] = []
     const seenHashes = new Set<string>()
     
     console.log(`🔍 Escaneando ${blocksToScan} blocos da ARC Testnet para encontrar transações REAIS...`)
     console.log('🌐 RPC Endpoint:', ARC_TESTNET_CONFIG.rpcUrls[0])
     console.log('🔗 Chain ID:', ARC_TESTNET_CONFIG.chainId)
-    console.log('📡 Conectando diretamente à blockchain ARC Testnet...')
     
     // Buscar blocos sequencialmente (mais confiável)
     for (let i = 0; i < blocksToScan && transactions.length < 15; i++) {
@@ -359,22 +357,36 @@ async function fetchRecentTransactionsViaRPC(): Promise<RecentTransaction[]> {
 
 /**
  * Busca transações recentes da blockchain ARC Testnet
- * ESTRATÉGIA: Buscar diretamente via RPC da blockchain ARC Testnet para garantir transações REAIS
- * Fallback para Blockscout API se RPC falhar
+ * ESTRATÉGIA: Priorizar Blockscout API (rápido) > RPC direto (garante dados reais)
  */
 async function fetchRecentTransactions(): Promise<RecentTransaction[]> {
   console.log('🚀 🚀 🚀 INICIANDO BUSCA DE TRANSAÇÕES REAIS DA BLOCKCHAIN ARC TESTNET')
   console.log('🔍 Explorer:', ARC_TESTNET_CONFIG.blockExplorerUrls[0])
   console.log('🔗 RPC:', ARC_TESTNET_CONFIG.rpcUrls[0])
   console.log('🔗 Chain ID:', ARC_TESTNET_CONFIG.chainId)
-  console.log('🌐 Conectando diretamente à blockchain ARC Testnet...')
   
-  // PRIORIDADE 1: Buscar diretamente via RPC da blockchain (garante transações REAIS)
-  console.log('📡 Buscando transações REAIS diretamente da blockchain ARC Testnet via RPC...')
+  // PRIORIDADE 1: Buscar via Blockscout API (mais rápido e confiável)
+  console.log('📡 Buscando transações via Blockscout API (ARC Scan)...')
+  const blockscoutTxs = await fetchRecentTransactionsFromExplorer()
+  
+  if (blockscoutTxs.length > 0) {
+    console.log(`✅ ✅ ✅ ${blockscoutTxs.length} TRANSAÇÕES encontradas via Blockscout API!`)
+    console.log('📊 Primeiras transações:', blockscoutTxs.slice(0, 3).map(tx => ({
+      hash: tx.hash.slice(0, 16) + '...',
+      from: tx.from.slice(0, 10) + '...',
+      value: tx.value,
+      type: tx.type,
+    })))
+    return blockscoutTxs
+  }
+  
+  // PRIORIDADE 2: Fallback para RPC direto (mais lento mas garante dados reais)
+  console.log('🔄 Blockscout API não retornou transações, tentando RPC direto...')
+  console.log('🌐 Conectando diretamente à blockchain ARC Testnet via RPC...')
   const rpcTxs = await fetchRecentTransactionsViaRPC()
   
   if (rpcTxs.length > 0) {
-    console.log(`✅ ✅ ✅ ${rpcTxs.length} TRANSAÇÕES REAIS encontradas diretamente da blockchain ARC Testnet!`)
+    console.log(`✅ ${rpcTxs.length} TRANSAÇÕES REAIS encontradas diretamente da blockchain ARC Testnet!`)
     console.log('📊 Primeiras transações:', rpcTxs.slice(0, 3).map(tx => ({
       hash: tx.hash.slice(0, 16) + '...',
       from: tx.from.slice(0, 10) + '...',
@@ -383,21 +395,6 @@ async function fetchRecentTransactions(): Promise<RecentTransaction[]> {
       blockNumber: tx.blockNumber.toString(),
     })))
     return rpcTxs
-  }
-  
-  // PRIORIDADE 2: Fallback para API do Blockscout (mais rápido mas pode ter delay)
-  console.log('🔄 RPC não retornou transações, tentando Blockscout API (ARC Scan)...')
-  const blockscoutTxs = await fetchRecentTransactionsFromExplorer()
-  
-  if (blockscoutTxs.length > 0) {
-    console.log(`✅ ${blockscoutTxs.length} TRANSAÇÕES encontradas via Blockscout API!`)
-    console.log('📊 Primeiras transações:', blockscoutTxs.slice(0, 3).map(tx => ({
-      hash: tx.hash.slice(0, 16) + '...',
-      from: tx.from.slice(0, 10) + '...',
-      value: tx.value,
-      type: tx.type,
-    })))
-    return blockscoutTxs
   }
   
   console.warn('❌ Nenhuma transação encontrada após todas as tentativas')
@@ -417,11 +414,11 @@ export function useRecentTransactions() {
     queryKey: ['recent-transactions-arc-testnet'],
     queryFn: fetchRecentTransactions,
     staleTime: 0, // Sempre considerar stale para atualização constante
-    refetchInterval: 3000, // Atualizar a cada 3 segundos (tempo suficiente para buscar da blockchain)
+    refetchInterval: 5000, // Atualizar a cada 5 segundos (tempo suficiente para buscar)
     refetchIntervalInBackground: true, // Continuar atualizando mesmo em background
-    retry: 5, // Tentar 5 vezes em caso de erro (mais tentativas para garantir)
-    retryDelay: 2000, // Esperar 2s entre tentativas
-    gcTime: 15000, // Manter em cache por 15 segundos
+    retry: 3, // Tentar 3 vezes em caso de erro
+    retryDelay: 1000, // Esperar 1s entre tentativas
+    gcTime: 10000, // Manter em cache por 10 segundos
     refetchOnWindowFocus: true, // Atualizar quando janela ganha foco
     refetchOnMount: true, // Atualizar ao montar componente
     refetchOnReconnect: true, // Atualizar ao reconectar
