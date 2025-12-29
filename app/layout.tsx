@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: "ARC Explorer - Testnet Activity Scanner",
   description: "Discover your ARC Testnet activity metrics and explore the ecosystem",
   generator: "v0.app",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+  },
   icons: {
     icon: [
       {

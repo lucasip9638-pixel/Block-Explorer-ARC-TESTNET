@@ -157,13 +157,47 @@ export function AutoAlerts() {
                   {/* Valor */}
                   <div>
                     <p className="text-xs text-muted-foreground mb-0.5">Valor</p>
-                    <p className="text-sm font-semibold text-foreground">
-                      {parseFloat(tx.value) > 0 
-                        ? parseFloat(tx.value).toLocaleString('pt-BR', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 6,
-                          })
-                        : '0.00'} USDC
+                    <p className="text-sm font-semibold text-foreground break-words">
+                      {(() => {
+                        try {
+                          let numValue = typeof tx.value === 'string' ? parseFloat(tx.value) : Number(tx.value)
+                          
+                          // Verificar se o valor parece estar incorreto (muito grande)
+                          // Se for maior que 1000, pode estar com decimais errados
+                          if (numValue > 1000) {
+                            // Dividir por 10^12 se parecer estar usando 18 decimais em vez de 6
+                            const adjusted = numValue / 1000000000000
+                            if (adjusted > 0 && adjusted <= 1000) {
+                              numValue = adjusted
+                            }
+                          }
+                          
+                          if (isNaN(numValue) || numValue <= 0) {
+                            return '0,00'
+                          }
+                          
+                          // Formatar com 2 casas decimais para valores pequenos
+                          // Exemplo: 0,001 USDC = 0,00 USDC (arredondado) ou 0,001 USDC (com mais casas)
+                          // Para valores muito pequenos, mostrar mais casas decimais
+                          let formatted
+                          if (numValue < 0.01) {
+                            // Valores muito pequenos: mostrar até 6 casas decimais
+                            formatted = numValue.toLocaleString('pt-BR', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 6,
+                            })
+                          } else {
+                            // Valores normais: 2 casas decimais
+                            formatted = numValue.toLocaleString('pt-BR', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
+                          }
+                          return formatted
+                        } catch {
+                          return '0,00'
+                        }
+                      })()} USDC
                     </p>
                   </div>
 

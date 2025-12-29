@@ -190,22 +190,22 @@ export function DAppGrid() {
 
 
   return (
-    <section id="ecosystem" className="py-16 bg-background">
+    <section id="ecosystem" className="py-12 sm:py-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <h2 className="text-4xl font-bold text-foreground">DApps</h2>
-            <span className="px-4 py-1.5 rounded-full bg-blue-400/10 text-blue-500 dark:text-blue-400 text-sm font-semibold border border-blue-400/20 shadow-sm">
+        <div className="mb-8 sm:mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">DApps</h2>
+            <span className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-blue-400/10 text-blue-500 dark:text-blue-400 text-xs sm:text-sm font-semibold border border-blue-400/20 shadow-sm">
               {filteredDapps.length} {selectedCategory === "All" ? "Apps" : `${selectedCategory} Apps`}
             </span>
           </div>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto text-center">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto text-center px-4">
             Explore verified decentralized applications built on ARC Testnet. From DeFi protocols to NFT marketplaces,
             discover the future of blockchain technology.
           </p>
         </div>
 
-        <div className="mb-8 flex flex-wrap gap-2 justify-center items-center">
+        <div className="mb-6 sm:mb-8 flex flex-wrap gap-2 justify-center items-center px-2">
           {categories.map((category) => {
             const isActive = selectedCategory === category
             return (
@@ -214,7 +214,7 @@ export function DAppGrid() {
                 type="button"
                 onClick={() => handleCategoryChange(category)}
                 className={`
-                  px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ease-in-out
+                  px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all duration-300 ease-in-out
                   cursor-pointer select-none
                   ${isActive 
                     ? "bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-lg scale-105 font-semibold" 
@@ -239,7 +239,7 @@ export function DAppGrid() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {filteredDapps.map((dapp, index) => (
               <Card
                 key={`${dapp.name}-${dapp.category}-${index}`}

@@ -202,10 +202,14 @@ async function fetchBalancesFromBlockscout(address: string): Promise<TokenBalanc
             }
             
             // Converter o valor para BigInt corretamente
+            // SEMPRE usar 6 decimais para USDC e EURC na ARC Testnet
             const valueBigInt = typeof token.value === 'string' 
               ? BigInt(token.value) 
               : BigInt(token.value.toString())
-            const balance = formatUnits(valueBigInt, decimals)
+            
+            // Garantir que USDC e EURC sempre usam 6 decimais
+            const correctDecimals = (symbol.toUpperCase() === 'USDC' || symbol.toUpperCase() === 'EURC') ? 6 : decimals
+            const balance = formatUnits(valueBigInt, correctDecimals)
             
             balances.push({
               symbol: symbol.toUpperCase(),
@@ -414,6 +418,5 @@ export function useWalletBalance(address: string | undefined) {
 export function useNativeBalance(address: string | undefined) {
   return useBalance({
     address: address as Address,
-    enabled: !!address && address.startsWith('0x'),
   })
 }
