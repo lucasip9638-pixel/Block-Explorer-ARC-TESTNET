@@ -8,13 +8,16 @@ import { ARC_TESTNET_CONFIG } from "@/config/arc-testnet"
 import { formatAddress } from "@/lib/utils"
 
 export function AutoAlerts() {
-  const { data: transactions, isLoading } = useRecentTransactions()
+  const { data: transactions, isLoading, error } = useRecentTransactions()
 
   // Sempre mostrar as 10 transações mais recentes
   const displayTransactions = useMemo(() => {
+    console.log('📊 AutoAlerts - Transações recebidas:', transactions?.length || 0)
     if (!transactions || transactions.length === 0) {
+      console.log('⚠️ AutoAlerts - Nenhuma transação disponível')
       return []
     }
+    console.log('✅ AutoAlerts - Exibindo', Math.min(transactions.length, 10), 'transações')
     return transactions.slice(0, 10)
   }, [transactions])
 
@@ -164,8 +167,8 @@ export function AutoAlerts() {
                           
                           // Verificar se o valor parece estar incorreto (muito grande)
                           // Se for maior que 1000, pode estar com decimais errados
+                          // Dividir por 10^12 se parecer estar usando 18 decimais em vez de 6
                           if (numValue > 1000) {
-                            // Dividir por 10^12 se parecer estar usando 18 decimais em vez de 6
                             const adjusted = numValue / 1000000000000
                             if (adjusted > 0 && adjusted <= 1000) {
                               numValue = adjusted

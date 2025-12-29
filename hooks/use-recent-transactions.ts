@@ -125,50 +125,25 @@ async function fetchRecentTransactionsFromExplorer(): Promise<RecentTransaction[
               const to = tx.to?.address || tx.to || tx.to_address || null
               
               // Converter valor - USDC na ARC Testnet usa 6 decimais
-              // Garantir que valores reais sejam exibidos corretamente
+              // SEMPRE usar 6 decimais para garantir valores corretos
               let value = '0'
               if (tx.value) {
                 try {
-                  const valueStr = typeof tx.value === 'string' ? tx.value.trim() : tx.value.toString().trim()
+                  const valueStr = typeof tx.value === 'string' ? tx.value.trim() : String(tx.value).trim()
                   
                   // Se já está formatado com ponto decimal, usar diretamente
                   if (valueStr.includes('.')) {
                     const numValue = parseFloat(valueStr)
-                    // Verificar se o valor parece estar incorreto (muito grande)
-                    // Se for maior que 1000, pode estar com decimais errados
                     if (!isNaN(numValue) && numValue > 0) {
-                      // Se o valor for muito grande, pode estar usando decimais errados
-                      // Dividir por 10^12 se parecer estar usando 18 decimais em vez de 6
-                      if (numValue > 1000000) {
-                        const adjusted = numValue / 1000000000000
-                        if (adjusted > 0 && adjusted < 1000) {
-                          value = adjusted.toString()
-                        } else {
-                          value = numValue.toString()
-                        }
-                      } else {
-                        value = numValue.toString()
-                      }
+                      value = numValue.toString()
                     }
-                  } else {
-                    // Valor em wei - converter usando 6 decimais para USDC
+                  } else if (valueStr && valueStr !== '0' && valueStr !== '') {
+                    // Valor em wei - SEMPRE converter usando 6 decimais para USDC
                     const valueBigInt = BigInt(valueStr)
-                    
-                    // Verificar se o valor parece estar usando 18 decimais (padrão Ethereum)
-                    // Se for >= 10^18, provavelmente está usando 18 decimais
-                    if (valueBigInt >= BigInt('1000000000000000000')) {
-                      // Converter com 18 decimais primeiro
-                      const converted18 = formatUnits(valueBigInt, 18)
-                      const num18 = parseFloat(converted18)
-                      // Se o resultado for muito pequeno (< 0.000001), pode precisar ajustar
-                      // Mas geralmente se está usando 18 decimais, o resultado já está correto
-                      value = num18.toString()
-                    } else {
-                      // Valor menor, usar 6 decimais diretamente (padrão USDC)
-                      const converted = formatUnits(valueBigInt, 6)
-                      const numConverted = parseFloat(converted)
-                      value = numConverted.toString()
-                    }
+                    // Converter de wei para USDC usando 6 decimais (padrão ARC Testnet)
+                    const converted = formatUnits(valueBigInt, 6)
+                    const numConverted = parseFloat(converted)
+                    value = numConverted.toString()
                   }
                 } catch (error: any) {
                   console.warn(`   ⚠️ Erro ao converter valor ${tx.value}:`, error.message)
@@ -211,8 +186,9 @@ async function fetchRecentTransactionsFromExplorer(): Promise<RecentTransaction[
                 type,
                 formattedTime: formatDistanceToNow(new Date(Number(timestamp) * 1000), { addSuffix: true }),
               }
-            })
+            }).filter((tx: RecentTransaction) => tx.hash && tx.hash.length > 0) // Filtrar transações inválidas
             
+            console.log(`✅ ${formattedTxs.length} transações formatadas com sucesso`)
             return formattedTxs
           }
         } else {
