@@ -137,7 +137,7 @@ async function fetchRecentTransactionsFromExplorer(): Promise<RecentTransaction[
                     if (!isNaN(numValue) && numValue > 0) {
                       value = numValue.toString()
                     }
-                  } else if (valueStr && valueStr !== '0' && valueStr !== '') {
+                  } else {
                     // Valor em wei - SEMPRE converter usando 6 decimais para USDC
                     const valueBigInt = BigInt(valueStr)
                     // Converter de wei para USDC usando 6 decimais (padrão ARC Testnet)
@@ -186,9 +186,8 @@ async function fetchRecentTransactionsFromExplorer(): Promise<RecentTransaction[
                 type,
                 formattedTime: formatDistanceToNow(new Date(Number(timestamp) * 1000), { addSuffix: true }),
               }
-            }).filter((tx: RecentTransaction) => tx.hash && tx.hash.length > 0) // Filtrar transações inválidas
+            })
             
-            console.log(`✅ ${formattedTxs.length} transações formatadas com sucesso`)
             return formattedTxs
           }
         } else {
