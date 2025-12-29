@@ -99,9 +99,9 @@ export function AutoAlerts() {
       <div className="container mx-auto px-4">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-semibold text-foreground">Transações Recentes</h3>
+            <h3 className="text-xl font-semibold text-foreground">Transferências Recentes</h3>
             <p className="text-sm text-muted-foreground">
-              Últimas 10 transações da rede ARC Testnet • Atualização automática
+              Últimas 10 transferências da rede ARC Testnet • Atualização automática
             </p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/10 border border-blue-600/20">
@@ -168,6 +168,16 @@ export function AutoAlerts() {
                       {tx.type || 'Transfer'}
                     </span>
                   </div>
+
+                  {/* Minerador do Bloco */}
+                  {tx.miner && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-0.5">Minerador</p>
+                      <p className="text-xs font-mono text-foreground break-all">
+                        {formatAddress(tx.miner, 6, 4)}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Valor */}
                   <div>

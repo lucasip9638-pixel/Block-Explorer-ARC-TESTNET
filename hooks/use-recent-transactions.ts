@@ -37,6 +37,7 @@ export interface RecentTransaction {
   blockNumber: bigint
   status: 'success' | 'pending' | 'failed'
   type: string
+  miner?: string
   formattedTime: string
 }
 
@@ -198,6 +199,7 @@ async function fetchRecentTransactionsFromExplorer(): Promise<RecentTransaction[
               return tx.type === 'Transfer' && 
                      tx.to !== null && 
                      tx.value !== '0' &&
+                     parseFloat(tx.value) > 0 &&
                      !tx.from.startsWith('0x0000000000000000000000000000000000000000')
             })
             
@@ -279,24 +281,30 @@ async function fetchRecentTransactionsViaRPC(): Promise<RecentTransaction[]> {
                     ? tx.value 
                     : BigInt(String(tx.value))
                   value = formatUnits(valueBigInt, 6)
-                } catch {
+                  } catch {
                   value = '0'
                 }
-              }
+                  }
               const from = tx.from || ''
               const to = tx.to || null
               
-                  let type = 'Transfer'
+              // Determinar tipo de transação
+              let type = 'Transfer'
               if (!to) {
-                    type = 'Contract Creation'
-                  } else if (tx.input && tx.input !== '0x' && tx.input.length > 2) {
-                    const methodId = tx.input.slice(0, 10)
-                    if (methodId === '0xa9059cbb') type = 'Transfer'
-                    else if (methodId === '0x095ea7b3') type = 'Approve'
-                    else if (methodId === '0x7ff36ab5' || methodId === '0x38ed1739') type = 'Swap'
-                    else type = 'Contract Call'
-                  }
-                  
+                type = 'Contract Creation'
+              } else if (tx.input && tx.input !== '0x' && tx.input.length > 2) {
+                const methodId = tx.input.slice(0, 10)
+                if (methodId === '0xa9059cbb') type = 'Transfer'
+                else if (methodId === '0x095ea7b3') type = 'Approve'
+                else if (methodId === '0x7ff36ab5' || methodId === '0x38ed1739') type = 'Swap'
+                else type = 'Contract Call'
+              }
+              
+              // FILTRAR: apenas transferências simples com valor > 0
+              if (type !== 'Transfer' || !to || value === '0' || parseFloat(value) <= 0) {
+                continue // Pular transações que não são transferências simples
+              }
+              
               // Status (não bloquear se falhar)
               let status: 'success' | 'failed' | 'pending' = 'pending'
               try {
@@ -309,18 +317,22 @@ async function fetchRecentTransactionsViaRPC(): Promise<RecentTransaction[]> {
                 status = 'pending'
               }
               
+              // Buscar minerador do bloco
+              const miner = block.miner || ''
+              
               transactions.push({
                 hash: txHash,
                 from,
                 to,
-                    value,
-                    timestamp: Number(block.timestamp),
-                    blockNumber: block.number,
-                    status,
-                    type,
-                    formattedTime: formatDistanceToNow(new Date(Number(block.timestamp) * 1000), {
-                      addSuffix: true,
-                    }),
+                value,
+                timestamp: Number(block.timestamp),
+                blockNumber: block.number,
+                status,
+                type,
+                miner,
+                formattedTime: formatDistanceToNow(new Date(Number(block.timestamp) * 1000), {
+                  addSuffix: true,
+                }),
               })
               
               console.log(`✅ TX ${transactions.length}/15: ${txHash.slice(0, 10)}...`)
@@ -417,7 +429,7 @@ async function fetchRecentTransactions(): Promise<RecentTransaction[]> {
   console.warn('   2. Se a rede ARC Testnet está ativa')
   console.warn('   3. Se há transações recentes na rede')
   console.warn('   4. Abra o console do navegador (F12) para ver logs detalhados')
-  return []
+    return []
 }
 
 /**
