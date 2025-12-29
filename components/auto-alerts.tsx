@@ -8,9 +8,9 @@ import { ARC_TESTNET_CONFIG } from "@/config/arc-testnet"
 import { formatAddress } from "@/lib/utils"
 
 export function AutoAlerts() {
-  const { data: transactions, isLoading, error } = useRecentTransactions()
+  const { data: transactions, isLoading, error, refetch } = useRecentTransactions()
 
-  // Filtrar apenas transferências e mostrar as 10 mais recentes
+  // Mostrar as 10 transações mais recentes (todos os tipos)
   const displayTransactions = useMemo(() => {
     console.log('📊 AutoAlerts - Transações recebidas:', transactions?.length || 0)
     if (!transactions || transactions.length === 0) {
@@ -21,21 +21,24 @@ export function AutoAlerts() {
       return []
     }
     
-    // Filtrar apenas transferências (já vem filtrado do hook, mas garantir)
-    // Remover filtro de valor para mostrar todas as transferências
-    const transfers = transactions.filter(tx => 
-      tx.type === 'Transfer' && 
-      tx.to !== null && 
-      tx.hash && tx.hash.length > 0
-    )
+    // Filtrar transações válidas (transferências e outras relevantes)
+    const validTxs = transactions.filter(tx => {
+      if (!tx.hash || tx.hash.length === 0 || !tx.from || tx.from.length === 0) {
+        return false
+      }
+      // Mostrar transferências e outras transações relevantes
+      return tx.type === 'Transfer' || tx.type === 'Contract Call' || tx.type === 'Swap' || (tx.value && tx.value !== '0')
+    })
     
-    console.log('✅ AutoAlerts - Exibindo', Math.min(transfers.length, 10), 'transferências')
-    console.log('📊 Primeiras transferências:', transfers.slice(0, 3).map(tx => ({
+    console.log('✅ AutoAlerts - Exibindo', Math.min(validTxs.length, 10), 'transações')
+    console.log('📊 Primeiras transações:', validTxs.slice(0, 3).map(tx => ({
       hash: tx.hash.slice(0, 16) + '...',
       from: tx.from.slice(0, 10) + '...',
+      to: tx.to?.slice(0, 10) + '...',
       value: tx.value,
+      type: tx.type,
     })))
-    return transfers.slice(0, 10)
+    return validTxs.slice(0, 10)
   }, [transactions, error])
 
   const formatTime = (timestamp: number) => {
@@ -57,14 +60,12 @@ export function AutoAlerts() {
         <div className="container mx-auto px-4">
           <div className="mb-4">
             <h3 className="text-xl font-semibold text-foreground">Transações Recentes</h3>
-            <p className="text-sm text-muted-foreground">Carregando transações da rede ARC...</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
             {Array.from({ length: 10 }).map((_, index) => (
               <Card key={index} className="p-4 border-2 border-border/60 bg-card/50">
                 <div className="flex items-center justify-center gap-2">
                   <Loader2 className="size-4 animate-spin text-blue-600" />
-                  <span className="text-xs text-muted-foreground">Carregando...</span>
                 </div>
               </Card>
             ))}
@@ -80,11 +81,37 @@ export function AutoAlerts() {
         <div className="container mx-auto px-4">
           <div className="mb-4">
             <h3 className="text-xl font-semibold text-foreground">Transações Recentes</h3>
-            <p className="text-sm text-muted-foreground">Aguardando transações na rede ARC...</p>
           </div>
-          <Card className="p-8 text-center border-2 border-border/60">
-            <AlertCircle className="size-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Nenhuma transação disponível no momento</p>
+          <Card className="p-8 text-center border-2 border-border/60 bg-card/70">
+            <div className="flex flex-col items-center gap-4">
+              <div className="p-3 rounded-full bg-blue-600/10 border-2 border-blue-600/20">
+                <Loader2 className="size-6 text-blue-600 animate-spin" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-foreground mb-2">
+                  Buscando transações...
+                </h4>
+                <p className="text-xs text-muted-foreground mb-4">
+                  {error 
+                    ? 'Erro ao conectar à blockchain ARC Testnet. Verifique sua conexão.'
+                    : 'Conectando à blockchain ARC Testnet e escaneando blocos recentes...'}
+                </p>
+                {error && (
+                  <p className="text-xs text-red-500 mb-4">
+                    Erro: {error.message || 'Erro desconhecido'}
+                  </p>
+                )}
+                <button
+                  onClick={() => {
+                    console.log('🔄 Tentando buscar transações novamente...')
+                    refetch()
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+                >
+                  Tentar Novamente
+                </button>
+              </div>
+            </div>
           </Card>
         </div>
       </section>
@@ -104,9 +131,9 @@ export function AutoAlerts() {
       <div className="container mx-auto px-4">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-semibold text-foreground">Transferências Recentes</h3>
+            <h3 className="text-xl font-semibold text-foreground">Transações Recentes</h3>
             <p className="text-sm text-muted-foreground">
-              Últimas 10 transferências da rede ARC Testnet • Atualização automática
+              Últimas 10 transações da rede ARC Testnet • Atualização automática
             </p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/10 border border-blue-600/20">
