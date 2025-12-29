@@ -22,14 +22,19 @@ export function AutoAlerts() {
     }
     
     // Filtrar apenas transferências (já vem filtrado do hook, mas garantir)
+    // Remover filtro de valor para mostrar todas as transferências
     const transfers = transactions.filter(tx => 
       tx.type === 'Transfer' && 
       tx.to !== null && 
-      tx.value !== '0' &&
-      parseFloat(tx.value) > 0
+      tx.hash && tx.hash.length > 0
     )
     
     console.log('✅ AutoAlerts - Exibindo', Math.min(transfers.length, 10), 'transferências')
+    console.log('📊 Primeiras transferências:', transfers.slice(0, 3).map(tx => ({
+      hash: tx.hash.slice(0, 16) + '...',
+      from: tx.from.slice(0, 10) + '...',
+      value: tx.value,
+    })))
     return transfers.slice(0, 10)
   }, [transactions, error])
 

@@ -193,17 +193,25 @@ async function fetchRecentTransactionsFromExplorer(): Promise<RecentTransaction[
                 formattedTime: formatDistanceToNow(new Date(Number(timestamp) * 1000), { addSuffix: true }),
               }
             })
-            // FILTRAR: Mostrar apenas transferências
+            // FILTRAR: Mostrar apenas transferências (remover filtro muito restritivo)
             const transferTxs = formattedTxs.filter(tx => {
               // Apenas transferências simples (não contratos, não approvals, não swaps)
+              // Remover filtro de valor para mostrar todas as transferências
               return tx.type === 'Transfer' && 
                      tx.to !== null && 
-                     tx.value !== '0' &&
-                     parseFloat(tx.value) > 0 &&
-                     !tx.from.startsWith('0x0000000000000000000000000000000000000000')
+                     tx.hash && tx.hash.length > 0
             })
             
             console.log(`📊 ${transferTxs.length} transferências filtradas de ${formattedTxs.length} transações totais`)
+            if (transferTxs.length > 0) {
+              console.log('✅ Primeiras transferências:', transferTxs.slice(0, 3).map(tx => ({
+                hash: tx.hash.slice(0, 16) + '...',
+                from: tx.from.slice(0, 10) + '...',
+                to: tx.to?.slice(0, 10) + '...',
+                value: tx.value,
+                type: tx.type,
+              })))
+            }
             return transferTxs
           }
         } else {
@@ -300,8 +308,8 @@ async function fetchRecentTransactionsViaRPC(): Promise<RecentTransaction[]> {
                 else type = 'Contract Call'
               }
               
-              // FILTRAR: apenas transferências simples com valor > 0
-              if (type !== 'Transfer' || !to || value === '0' || parseFloat(value) <= 0) {
+              // FILTRAR: apenas transferências simples (remover filtro de valor)
+              if (type !== 'Transfer' || !to) {
                 continue // Pular transações que não são transferências simples
               }
               
