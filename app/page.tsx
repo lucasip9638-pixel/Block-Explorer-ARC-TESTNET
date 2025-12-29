@@ -1,6 +1,7 @@
 import { Header } from "@/components/header"
 import { Hero } from "@/components/hero"
 import { DAppGrid } from "@/components/dapp-grid"
+import { AutoAlerts } from "@/components/auto-alerts"
 import { WalletActivity } from "@/components/wallet-activity"
 import { Footer } from "@/components/footer"
 import { ArcBackground } from "@/components/arc-background"
@@ -12,6 +13,7 @@ export default function Home() {
       <Header />
           <main className="relative z-10">
             <Hero />
+            <AutoAlerts />
             <WalletActivity title="Minhas Transações na ARC Testnet" />
             <DAppGrid />
           </main>
